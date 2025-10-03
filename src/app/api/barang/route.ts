@@ -33,8 +33,26 @@ export const GET = async () => {
 
 // buat service POST (simpan data)
 export const POST = async (request: NextRequest) => {
-    // simpan data
-    const data = await request.json();
+    const data = await request.json()
+
+    // cek apakah kode barang sudah ada atau belum
+    const check = await prisma.tb_barang.findFirst({
+        where: {
+            kode: data.kode
+        },
+        select: {
+            kode: true
+        }
+    })
+    // jika data ditemukan
+    if (check) {
+        return NextResponse.json({
+            message: "Data barang gagal disimpan (kode barang sudah ada)",
+            success: false
+        })
+    }
+
+    // jika data tidak ditemukan
     await prisma.tb_barang.create({
         data: {
             kode: data.kode,
@@ -43,9 +61,9 @@ export const POST = async (request: NextRequest) => {
             satuan: data.satuan
         }       
     })
-
     return NextResponse.json({
         message: "Data barang berhasil disimpan",
         success: true
     })
+
 }
